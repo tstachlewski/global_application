@@ -1,0 +1,16 @@
+aws s3 cp movies/01.mp4 s3://summit-underthecloud-16-europe/01.mp4 --acl public-read
+aws s3 cp movies/02.mp4 s3://summit-underthecloud-16-europe/02.mp4 --acl public-read
+aws s3 cp movies/03.mp4 s3://summit-underthecloud-16-europe/03.mp4 --acl public-read
+
+//Create Network
+aws cloudformation create-stack --stack-name EUROPE-NETWORK --region eu-west-1 --capabilities CAPABILITY_IAM --template-body file://iac/network.yaml
+aws cloudformation create-stack --stack-name USA-NETWORK --region us-west-1 --capabilities CAPABILITY_IAM --template-body file://iac/network.yaml
+
+//Build and push
+docker build -t repo my-app/.
+docker tag repo:latest 679617833617.dkr.ecr.eu-west-1.amazonaws.com/repo:latest
+docker push 679617833617.dkr.ecr.eu-west-1.amazonaws.com/repo:latest
+
+
+aws cloudformation create-stack --stack-name EUROPE-APP --region eu-west-1 --capabilities CAPABILITY_IAM --template-body file://iac/myapp.yaml
+aws cloudformation create-stack --stack-name USA-APP --region us-west-1 --capabilities CAPABILITY_IAM --template-body file://iac/myapp.yaml
